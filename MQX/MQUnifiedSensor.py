@@ -73,6 +73,9 @@ class MQUnifiedSensor(object):
         self.__pin = pin # analog pin , 0 ,1 ,2 ,3 ,4 ...
         self.__Type = Type # E.G : "CUSTOM MQ"
         
+        #Arduino Setup
+        self.analog_input = classmethod.setArduino()
+        
     def setA(self, A):
         """
         
@@ -97,7 +100,7 @@ class MQUnifiedSensor(object):
     def setRL(self, RL = 1):
         self.__RL = RL
         
-    def setADC(self, value):
+    def setADC(self, value):#custome ADC
         self.__sensor_volt = (value) * self.__VOLT_RESOLUTION / (pow(2,self.__ADC_Bit_Resolution) - 1)
         self.__adc = value
 
@@ -118,7 +121,7 @@ class MQUnifiedSensor(object):
     def getVoltResolution(self):
         return self.__VOLT_RESOLUTION
     
-    def getRegressionMethod(self):
+    def getRegressionMethod(self) -> str:
         return "Exponential" if(self.__regressionMethod == 1) else "Linear"
     
     def getA(self):
@@ -160,6 +163,69 @@ class MQUnifiedSensor(object):
                 
             else:
                 
+                print(" | {}".format(self.__adc) + " | v = ADC * {}/{}".format(self.__VOLT_RESOLUTION,(pow(2, self.__ADC_Bit_Resolution) - 1)) +
+                " | {}".format(self.__sensor_volt) + "  | RS = (( {} *RL)/Voltage) - RL|    {}".format(self.__VOLT_RESOLUTION,self.__RS_Calc)  +
+                "     | Ratio = RS/R0|    {}       |   ".format(self.__ratio) +
+                "ratio*a + b" if(self.__regressionMethod == 1) else "pow(10, (log10(ratio)-b)/a)" +
+                "  |   {}   |".format(self.__PPM))
+    
+    
+    def getVoltage(self, read = True) -> float:
+        
+        sensor_voltage = 0
+        retries = 2
+        retry_interval = 20
+        
+        
+        
+        if(read):
+            avg_voltage = 0
+            for i in range(retries):
+                self.__adc = analog_input.read()
+                avg_voltage += self.__adc
+                time.sleep(retry_interval)
+            sensor_voltage = (avg_voltage/ retries) * self.__VOLT_RESOLUTION / ((pow(2, self.__ADC_Bit_Resolution)) - 1)
+        else:
+            sensor_voltage - self.__sensor_volt
+        
+        return sensor_voltage
+    
+    
+    def setArduino(self):# -> object:
+        
+        port = '/dev/ttyACM0'
+        board = pyfirmata.Arduino(port)
+        it = pyfirmata.util.Iterator(board)
+        it.start()
+        
+        analog_input = board.get_pin('a:{}:i'.format(self.__pin))
+        return analog_input
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     
     
