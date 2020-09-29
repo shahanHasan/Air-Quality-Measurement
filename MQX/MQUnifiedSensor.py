@@ -230,7 +230,7 @@ class MQUnifiedSensor(object):
         """
         return self.__VOLT_RESOLUTION
     
-    def getRegressionMethod(self) -> str:
+    def getRegressionMethod(self):# -> str:
         """
         Use of method for regression.
 
@@ -256,7 +256,7 @@ class MQUnifiedSensor(object):
 
     def getB(self):
         """
-        Intercept of Y axis
+        Intercept of Y axis.
 
         Returns
         -------
@@ -334,7 +334,7 @@ class MQUnifiedSensor(object):
         """
         self.__sensor_volt = self.getVoltage()
     
-    def getVoltage(self, read = True) -> float:
+    def getVoltage(self, read = True):# -> float:
         """
         Low level implementation of reading sensor data.
 
@@ -367,7 +367,7 @@ class MQUnifiedSensor(object):
         return sensor_voltage
     
     @classmethod
-    def setArduino(cls, pin) -> object:
+    def setArduino(cls, pin):# -> object:
         """
         Set up arduino with python.
 
@@ -393,7 +393,7 @@ class MQUnifiedSensor(object):
         return analog_input
     
     
-    def calibrate(self, ratioInCleanAir) -> float:
+    def calibrate(self, ratioInCleanAir):# -> float:
         """
         More explained in: https://jayconsystems.com/blog/understanding-a-gas-sensor.
         
@@ -435,7 +435,7 @@ class MQUnifiedSensor(object):
     
     
     
-    def readSensor(self) -> float:
+    def readSensor(self):# -> float:
         """
         
         Convert sensor volt to gas concentration in PPM.
@@ -465,7 +465,7 @@ class MQUnifiedSensor(object):
             
         return self.__PPM
     
-    def validateEquation(self, ratioInput) -> float:
+    def validateEquation(self, ratioInput):# -> float:
         """
         Validate Equation for testing.
 
