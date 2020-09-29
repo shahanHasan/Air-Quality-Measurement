@@ -7,12 +7,12 @@ Created on Mon Sep 28 21:59:19 2020.
 
 """
 
-import math , datetime , time , random
+import math , time 
 import pyfirmata
 
 class MQUnifiedSensor(object):
     """
-    A class used to represent MQ-X sensors
+    A class used to represent MQ-X sensors.
 
     Attributes
     ----------
@@ -35,6 +35,7 @@ class MQUnifiedSensor(object):
               getRegressionMethod, getVoltage
     User Functions : calibrate, readSensor, validateEquation
     """
+    
 ################## Software Related Macros / Private names #################
     __firstFlag = False
     #__VOLT_RESOLUTION  = 5.0 -> Assign your own
@@ -78,6 +79,7 @@ class MQUnifiedSensor(object):
         
     def setA(self, A):
         """
+        M/m = [log(y) - log(y0)] / [log(x) - log(x0)].
         
         Parameters
         ----------
@@ -92,46 +94,197 @@ class MQUnifiedSensor(object):
         self.__a = A
     
     def setB(self, B):
+        """
+        
+        B/b = log(y) - m*log(x).
+
+        Parameters
+        ----------
+        B : TYPE -> Float 
+            DESCRIPTION. -> slope of the graph from data Sheet
+
+        Returns
+        -------
+        None.
+
+        """
         self.__b = B
         
     def setR0(self, R0 = 0):
+        """
+        
+        Resistance for gas in clean air.
+
+        Parameters
+        ----------
+        R0 : TYPE, optional
+            DESCRIPTION. The default is 0.
+
+        Returns
+        -------
+        None.
+
+        """
         self.__R0 = R0
     
     def setRL(self, RL = 1):
+        """
+        Resistance between analog output and GND in Voltage divider.
+
+        Parameters
+        ----------
+        RL : TYPE, optional
+            DESCRIPTION. The default is 1.
+
+        Returns
+        -------
+        None.
+
+        """
         self.__RL = RL
         
-    def setADC(self, value):#custome ADC
+    def setADC(self, value):#for custom ADC
+        """
+        If a Custom / Separate ADC is used.
+
+        Parameters
+        ----------
+        value : TYPE -> float
+            DESCRIPTION. -> ADC sensor value/ Output of A0
+
+        Returns
+        -------
+        None.
+
+        """
         self.__sensor_volt = (value) * self.__VOLT_RESOLUTION / (pow(2,self.__ADC_Bit_Resolution) - 1)
         self.__adc = value
 
 
     def setVoltResolution(self, voltage_resolution = 5):
+        """
+        Use 5 volt sensors, Adjust as needed.
+
+        Parameters
+        ----------
+        voltage_resolution : TYPE, optional
+            DESCRIPTION. The default is 5.
+
+        Returns
+        -------
+        None.
+
+        """
         self.__VOLT_RESOLUTION = voltage_resolution
         
     
     def setRegressionMethod(self, regression_Method):
+        """
+        Linear scale or Logarithmic Scale.
+
+        Parameters
+        ----------
+        regression_Method : TYPE -> Int
+            DESCRIPTION. -> if 1 then linear else logarithmic
+
+        Returns
+        -------
+        None.
+
+        """
         self.__regressionMethod = regression_Method
 
     def getR0(self):
+        """
+        Return value of R0.
+
+        Returns
+        -------
+        TYPE -> float
+    
+
+        """
         return self.__R0
     
     def getRL(self):
+        """
+        Adjust as you used in setRL.
+
+        Returns
+        -------
+        TYPE -> float
+            DESCRIPTION. -> Returns the value of RL the is set
+
+        """
         return self.__RL
     
     def getVoltResolution(self):
+        """
+        Get voltage resolution.
+
+        Returns
+        -------
+        TYPE -> float
+        DESCRIPTION. -> Voltage of the sensors
+
+        """
         return self.__VOLT_RESOLUTION
     
     def getRegressionMethod(self) -> str:
+        """
+        Use of method for regression.
+
+        Returns
+        -------
+        str
+            DESCRIPTION. -> Exponential or Linear/Logarithmic
+
+        """
         return "Exponential" if(self.__regressionMethod == 1) else "Linear"
     
     def getA(self):
+        """
+        Slope of the Graph in datasheet.
+
+        Returns
+        -------
+        TYPE -> float
+        DESCRIPTION. ->Slope
+
+        """
         return self.__a
 
     def getB(self):
+        """
+        Intercept of Y axis
+
+        Returns
+        -------
+        TYPE -> float
+        DESCRIPTION. -> Intercept
+
+        """
         return self.__b
     
     def serialDebug(self, onSetup = False):
+        """
         
+        Represent the Class in Strings.
+        
+        step 1 : Prints the class desc.
+        step 2 : The last part
+        
+        Parameters
+        ----------
+        onSetup : TYPE, optional
+        
+        DESCRIPTION. The default is False.
+
+        Returns
+        -------
+        None.
+
+        """   
         if(onSetup):
             print()
             print("*******************************************************************")
@@ -156,7 +309,7 @@ class MQUnifiedSensor(object):
             "Development board: " + self.__BOARD) 
         
         else:
-            if not self.__firstFlag:
+            if not self.__firstFlag: # Header
                 print("| ******************** " + self.__Type + "********************* | \n" +
                 "| ADC_In | Equation_V_ADC | Voltage_ADC |        Equation_RS        |  Resistance_RS  |    EQ_Ratio  | Ratio (RS/R0) | Equation_PPM |     PPM    |")
                 self.__firstFlag = True
@@ -171,16 +324,36 @@ class MQUnifiedSensor(object):
     
     
     def update(self):
+        """
+        Get current value of the sensor.
+
+        Returns
+        -------
+        None.
+
+        """
         self.__sensor_volt = self.getVoltage()
     
     def getVoltage(self, read = True) -> float:
-        
+        """
+        Low level implementation of reading sensor data.
+
+        Parameters
+        ----------
+        read : TYPE, optional
+            DESCRIPTION. The default is True.
+
+        Returns
+        -------
+        float
+            DESCRIPTION. -> return sensor voltage / A0 in volts 
+
+        """  
         sensor_voltage = 0
         retries = 2
         retry_interval = 20
         
-        
-        
+    
         if(read):
             avg_voltage = 0
             for i in range(retries):
@@ -194,8 +367,23 @@ class MQUnifiedSensor(object):
         return sensor_voltage
     
     @classmethod
-    def setArduino(cls, pin):# -> object:
-        
+    def setArduino(cls, pin) -> object:
+        """
+        Set up arduino with python.
+
+        Parameters
+        ----------
+        cls : TYPE -> self
+            DESCRIPTION.
+        pin : TYPE -> Arduino pin
+            DESCRIPTION.
+
+        Returns
+        -------
+        object -> analog_input
+        DESCRIPTION.
+
+        """   
         port = '/dev/ttyACM0'
         board = pyfirmata.Arduino(port)
         it = pyfirmata.util.Iterator(board)
@@ -207,7 +395,8 @@ class MQUnifiedSensor(object):
     
     def calibrate(self, ratioInCleanAir) -> float:
         """
-        More explained in: https://jayconsystems.com/blog/understanding-a-gas-sensor
+        More explained in: https://jayconsystems.com/blog/understanding-a-gas-sensor.
+        
         V = I x R 
         VRL = [VC / (RS + RL)] x RL 
         VRL = (VC x RL) / (RS + RL) 
@@ -217,6 +406,12 @@ class MQUnifiedSensor(object):
         (VRL x RS) = (VC x RL) - (VRL x RL)
         RS = [(VC x RL) - (VRL x RL)] / VRL
         RS = [(VC x RL) / VRL] - RL
+        
+        TODO : 
+        1. When getting the R0 value, do it in a clean environment where no other gases are present.
+
+        2. The datasheet recommends to calculate R0 in an environment that has 10000 
+        ppm of methane. If you can simulate such environment, calculate R0 under these conditions.
 
         Parameters
         ----------
@@ -241,7 +436,16 @@ class MQUnifiedSensor(object):
     
     
     def readSensor(self) -> float:
+        """
         
+        Convert sensor volt to gas concentration in PPM.
+
+        Returns
+        -------
+        float
+            DESCRIPTION.
+
+        """
         self.__RS_Calc = ((self.__VOLT_RESOLUTION * self.__RL ) / self.__sensor_volt ) - self.__RL
         if(self.__RS_Calc < 0):  
             self.__RS_Calc = 0
@@ -262,7 +466,20 @@ class MQUnifiedSensor(object):
         return self.__PPM
     
     def validateEquation(self, ratioInput) -> float:
-        
+        """
+        Validate Equation for testing.
+
+        Parameters
+        ----------
+        ratioInput : TYPE -> float
+        DESCRIPTION. -> R0/Rs
+
+        Returns
+        -------
+        float 
+        DESCRIPTION. -> PPM , gas concentration
+
+        """ 
         if(self.__regressionMethod == 1): 
             self.__PPM = self.__a * pow( ratioInput , self.__b )
         else:
