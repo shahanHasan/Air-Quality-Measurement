@@ -55,8 +55,8 @@ class MQUnifiedSensor(object):
     board = pyfirmata.Arduino(port)
     it = pyfirmata.util.Iterator(board)
     it.start()
-    time.sleep(0.1)
-    analog_input = board.get_pin('a:{}:i'.format(pin))
+    time.sleep(0.2)
+    
     
     def __init__(self, BOARD, Voltage_Resolution, ADC_Bit_Resolution, pin, Type):
         """
@@ -78,8 +78,13 @@ class MQUnifiedSensor(object):
         self. __BOARD = BOARD # E.G : "Arduino"
         self.__VOLT_RESOLUTION = Voltage_Resolution
         self.__ADC_Bit_Resolution = ADC_Bit_Resolution
-        self.__pin = pin # analog pin , 0 ,1 ,2 ,3 ,4 ...
         self.__Type = Type # E.G : "CUSTOM MQ"
+        self.__pin = pin # analog pin , 0 ,1 ,2 ,3 ,4 ...
+        # Arduino Setup
+        self.analog_input = self.board.get_pin('a:{}:i'.format(self.__pin))
+        time.sleep(0.2)
+        self.analog_input.enable_reporting()
+        time.sleep(0.2)
         
         #Arduino Setup
         #self.analog_input = MQUnifiedSensor.setArduino(self.__pin)
@@ -318,7 +323,7 @@ class MQUnifiedSensor(object):
         else:
             if not self.__firstFlag: # Header
                 print("| ******************** " + self.__Type + "********************* | \n" +
-                "| ADC_In | Equation_V_ADC | Voltage_ADC |        Equation_RS        |  Resistance_RS  |    EQ_Ratio  | Ratio (RS/R0) | Equation_PPM |     PPM    |")
+                "| ADC_In | Equation_V_ADC | Voltage_ADC |        Equation_RS        |  Resistance_RS  |    EQ_Ratio  |     Ratio (RS/R0)   |       Equation_PPM        |     PPM    |")
                 self.__firstFlag = True
                 
             else:
@@ -326,8 +331,7 @@ class MQUnifiedSensor(object):
                 print(" | {}".format(self.__adc) + " | v = ADC * {}/{}".format(self.__VOLT_RESOLUTION,(pow(2, self.__ADC_Bit_Resolution) - 1)) +
                 " | {}".format(self.__sensor_volt) + "  | RS = (( {} *RL)/Voltage) - RL|    {}".format(self.__VOLT_RESOLUTION,self.__RS_Calc)  +
                 "     | Ratio = RS/R0|    {}       |   ".format(self.__ratio) +
-                "ratio*a + b" if(self.__regressionMethod == 1) else "pow(10, (log10(ratio)-b)/a)" +
-                "  |   {}   |".format(self.__PPM))
+                "ratio*a + b  |   {}   |".format(self.__PPM) if(self.__regressionMethod == 1) else "pow(10, (log10(ratio)-b)/a)  |   {}   |".format(self.__PPM))
     
     
     def update(self):
@@ -361,19 +365,22 @@ class MQUnifiedSensor(object):
         #return self.__adc
         #analog_input = self.setArduino(self.__pin)
         sensor_voltage = 0
-        retries = 20
-        retry_interval = 0.5
-        count = 0
+        retries = 5
+        retry_interval = 0.2
+        #count = 0
         if(read):
             avg_voltage = 0
-            for i in range(retries):
+            count = 0
+            for _ in range(retries):
                 self.__adc = self.analog_input.read()
+                time.sleep(0.2)
                 if(self.__adc != None):
                     avg_voltage = avg_voltage + self.__adc
                     time.sleep(retry_interval)
                     count += 1
                 else:
                     pass
+                
             sensor_voltage = ((avg_voltage / count) * self.__VOLT_RESOLUTION) / ((math.pow(2, self.__ADC_Bit_Resolution)) - 1)
         
         else:
