@@ -7,7 +7,7 @@ Created on Tue Sep 29 17:41:16 2020.
 """
 
 from MQUnifiedSensor import MQUnifiedSensor
-import math  
+import math 
 
 
 class MQ4():
@@ -115,4 +115,3 @@ if __name__ == "__main__":
     MQ4S = MQ4()
     #MQ4.calibrate()
     MQ4S.main()
-    
