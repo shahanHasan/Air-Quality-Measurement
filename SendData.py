@@ -11,23 +11,91 @@ import urllib
 import time, datetime , csv
 from PMSensor.pmsensor import PMS
 from BMP280.BMPTest import BMS
+from MQX.MQ4 import MQ4 # CH4
+from MQX.MQ7 import MQ7 # CO
+from MQX.MQ131 import MQ131 # O3
+from MQX.MQ135 import MQ135 # NH4 and CO2
 
 key = "182ENGDTZ0WMJUPT"  # Put your API Key here
 
-def saveToCsv(sense1,sense2,sense3,sense4,sense5):
+def saveToCsv(sense1,sense2,sense3,sense4,sense5,sense6,sense7,sense8,sense9):
+    """
+    Save data to CSV, CSV set up.
+
+    Parameters
+    ----------
+    sense1 : TYPE -> Float
+        DESCRIPTION. -> Sensor Data
+    sense2 : TYPE
+        DESCRIPTION.
+    sense3 : TYPE
+        DESCRIPTION.
+    sense4 : TYPE
+        DESCRIPTION.
+    sense5 : TYPE
+        DESCRIPTION.
+    sense6 : TYPE
+        DESCRIPTION.
+    sense7 : TYPE
+        DESCRIPTION.
+    sense8 : TYPE
+        DESCRIPTION.
+    sense9 : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """
     
-    with open('/home/pi/data.csv', 'ab') as csvfile:
+    with open('data.csv', 'ab') as csvfile:
         file = csv.writer(csvfile, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        file.writerow([datetime.datetime.now().replace(microsecond=0).isoformat().replace('T', ' '), sense1, sense2, sense3, sense4, sense5])
+        file.writerow
+        ([datetime.datetime.now().replace(microsecond=0).isoformat().replace('T', ' '), 
+        sense1, sense2, sense3, sense4, sense5,
+        sense6,sense7,sense8,sense9])
         csvfile.close()
 
-def thingspeakconn(sense1,sense2,sense3,sense4,sense5):  
+def thingspeakconn(sense1,sense2,sense3,sense4,sense5,sense6,sense7,sense8,sense9):
+    """
+    Think Speak set up.
+    
+    Parameters
+    ----------
+    sense1 : TYPE -> double
+        DESCRIPTION. -> Sensor data
+    sense2 : TYPE
+        DESCRIPTION.
+    sense3 : TYPE
+        DESCRIPTION.
+    sense4 : TYPE
+        DESCRIPTION.
+    sense5 : TYPE
+        DESCRIPTION.
+    sense6 : TYPE
+        DESCRIPTION.
+    sense7 : TYPE
+        DESCRIPTION.
+    sense8 : TYPE
+        DESCRIPTION.
+    sense9 : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """
     params = urllib.urlencode(
          {'field1': sense1, 
           'field2': sense2,
           'field3': sense3, 
           'field4': sense4, 
-          'field5': sense5,  
+          'field5': sense5,
+          'field6': sense6,
+          'field7': sense7, 
+          'field8': sense8, 
           'key':key })
     #param2 = urllib.urlencode({'field2': pm[1], 'key':key })
     print("parameters taken")
@@ -52,21 +120,47 @@ def thingspeakconn(sense1,sense2,sense3,sense4,sense5):
 #    bms = BMS()
     
 def sendData():
+    """
+    Send data to Think Speak.
+
+    Returns
+    -------
+    None.
+
+    """
     pms = PMS()
+    
     bms = BMS()
+    
+    MQ4S = MQ4("CH4")
+    MQ7S = MQ7("CO")
+    MQ131S = MQ131("O3")
+    MQ135NH4 = MQ135("NH4")
+    MQ135CO2 = MQ135("CO2")
+    
     
     while True:
         print("Begin")
-        
+        #BMP sensor
         temp , pres , hum = bms.readFunc()
+        
+        #PM sensor
         pms.sensor_wake()
         time.sleep(10)
         pm = pms.sensor_read()
+        
+        #MQ sensor
+        CH4 = MQ4S.PPM()
+        CO = MQ7S.PPM()
+        O3 = MQ131S.PPM()
+        NH4 = MQ135NH4.PPM()
+        CO2 = MQ135CO2.PPM()
+                
         if pm is not None:
-            saveToCsv(pm[0],pm[1],temp , pres , hum) 
-            thingspeakconn(pm[0],pm[1],temp , pres , hum)
+            saveToCsv(pm[0],pm[1],temp , pres , hum, O3, NH4, CO, CH4, CO2) 
+            thingspeakconn(pm[0],pm[1],temp , pres , O3, NH4, CO, CH4)
             pms.sensor_sleep()
-            time.sleep(20)
+            time.sleep(10)
     
 if __name__ == "__main__":
     sendData()
