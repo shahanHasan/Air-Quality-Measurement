@@ -56,7 +56,7 @@ def saveToCsv(sense1,sense2,sense3,sense4,sense5,sense6,sense7,sense8,sense9,sen
         sense6,sense7,sense8,sense9,sense10])
         csvfile.close()
 
-def thingspeakconn(sense1,sense2,sense3,sense4,sense5,sense6,sense7,sense8,sense9):
+def thingspeakconn(sense1,sense2,sense3,sense4,sense5,sense6,sense7,sense8):
     """
     Think Speak set up.
     
