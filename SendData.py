@@ -8,7 +8,7 @@ Created on Sun Sep 20 03:18:48 2020.
 
 import httplib
 import urllib
-import time, datetime , csv
+import time, datetime , csv , os , sys
 from PMSensor.pmsensor import PMS
 from BMP280.BMPTest import BMS
 from MQX.MQ4 import MQ4 # CH4
@@ -162,4 +162,12 @@ def sendData():
             time.sleep(10)
     
 if __name__ == "__main__":
-    sendData()
+    
+    try:
+        sendData()
+    except KeyboardInterrupt:
+        print('Interrupted')
+        try:
+            sys.exit(0)
+        except SystemExit:
+            os._exit(0)
