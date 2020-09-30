@@ -18,7 +18,7 @@ from MQX.MQ135 import MQ135 # NH4 and CO2
 
 key = "182ENGDTZ0WMJUPT"  # Put your API Key here
 
-def saveToCsv(sense1,sense2,sense3,sense4,sense5,sense6,sense7,sense8,sense9):
+def saveToCsv(sense1,sense2,sense3,sense4,sense5,sense6,sense7,sense8,sense9,sense10):
     """
     Save data to CSV, CSV set up.
 
@@ -53,7 +53,7 @@ def saveToCsv(sense1,sense2,sense3,sense4,sense5,sense6,sense7,sense8,sense9):
         file.writerow
         ([datetime.datetime.now().replace(microsecond=0).isoformat().replace('T', ' '), 
         sense1, sense2, sense3, sense4, sense5,
-        sense6,sense7,sense8,sense9])
+        sense6,sense7,sense8,sense9,sense10])
         csvfile.close()
 
 def thingspeakconn(sense1,sense2,sense3,sense4,sense5,sense6,sense7,sense8,sense9):
