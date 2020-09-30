@@ -18,8 +18,20 @@ ser.open()
 ser.flushInput()
 
 class PMS:
+        """Sends data in byte String , so decode it."""
+        
         # 0xAA, 0xB4, 0x06, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0x06, 0xAB
         def sensor_wake(self):
+            """
+            Wake sensor up.
+            
+            Assign corresponding bytes before decode.
+
+            Returns
+            -------
+            None.
+
+            """
             bytes = ['\xaa', #head
             '\xb4', #command 1
             '\x06', #data byte 1
@@ -45,6 +57,14 @@ class PMS:
         
         # xAA, 0xB4, 0x06, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0x05, 0xAB
         def sensor_sleep(self):
+            """
+            Sensor Sleep.
+
+            Returns
+            -------
+            None.
+
+            """
             bytes = ['\xaa', #head
             '\xb4', #command 1
             '\x06', #data byte 1
@@ -69,6 +89,20 @@ class PMS:
                 ser.write(b)
 
         def process_frame(self, d):
+            """
+            Process Each byte String and extrapolate PM2.5 and PM10.
+
+            Parameters
+            ----------
+            d : TYPE
+                DESCRIPTION.
+
+            Returns
+            -------
+            data : TYPE -> Raw sensor Data.
+                DESCRIPTION.
+
+            """
             #dump_data(d) #debug
             r = struct.unpack('<HHxxBBB', d[2:])
             pm25 = r[0]/10.0
@@ -81,6 +115,15 @@ class PMS:
             return data
             
         def sensor_read(self):
+            """
+            Read raw sensor Value.
+
+            Returns
+            -------
+            data : TYPE
+                DESCRIPTION.
+
+            """
             byte = 0
             while byte != "\xaa":
                 byte = ser.read(size=1)
@@ -90,6 +133,14 @@ class PMS:
                     return data
 
         def sensor_live(self):
+            """
+            Live Sensor data for debugging.
+
+            Returns
+            -------
+            None.
+
+            """
             x = []
             y1 = []
             y2 = []

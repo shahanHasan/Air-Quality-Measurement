@@ -12,6 +12,14 @@ from MQX.MQ135 import MQ135 # NH4 and CO2
 
 
 def main():
+    """
+    Test.
+
+    Returns
+    -------
+    None.
+
+    """
     MQ4S = MQ4("CH4")
     MQ7S = MQ7("CO")
     MQ131S = MQ131("O3")
@@ -26,3 +34,9 @@ def main():
         NH4 = MQ135NH4.PPM()
         CO2 = MQ135CO2.PPM()
         print("CH4 : {} CO : {} O3 : {} NH4 : {} CO2 : {}".format(CH4, CO, O3, NH4, CO2))
+        
+        
+        
+if __name__ == "__main__":
+    
+    main()

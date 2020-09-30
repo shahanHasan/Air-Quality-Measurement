@@ -48,7 +48,6 @@ def saveToCsv(sense1,sense2,sense3,sense4,sense5,sense6,sense7,sense8,sense9):
     None.
 
     """
-    
     with open('data.csv', 'ab') as csvfile:
         file = csv.writer(csvfile, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         file.writerow

@@ -150,7 +150,7 @@ class MQ7():
         if(calcR0 == 0):
             print("Warning: Conection issue founded, R0 is zero (Analog pin with short circuit to ground) please check your wiring and supply")
         
-        self.MQ7.serialDebug(True)
+        #self.MQ7.serialDebug(True)
 
     def main(self):
         """
