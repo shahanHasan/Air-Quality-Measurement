@@ -6,9 +6,10 @@ Created on Mon Sep 28 21:59:19 2020.
 @author: shahan
 
 """
-
+from __future__ import division
 import math , time 
 import pyfirmata
+
 
 class MQUnifiedSensor(object):
     """
@@ -43,13 +44,19 @@ class MQUnifiedSensor(object):
     #__ADC_Bit_Resolution = 10 -> Assign your own 
     __regressionMethod = 1 # 1 -> Exponential || 2 -> Linear
     
-    __adc, __a, __b, __sensor_volt = None , None , None , None
-    __R0, __RS_air, __ratio, __PPM, __RS_Calc = None , None , None , None , None
+    __adc, __a, __b, __sensor_volt = 0, 0, 0, 0#None , None , None , None
+    __R0, __RS_air, __ratio, __PPM, __RS_Calc = 0, 0, 0, 0, 0#None , None , None , None , None
 # =============================================================================
 #     __Type : str
 #     __BOARD : str
 # =============================================================================
-    
+    #Arduino set up :
+    port = '/dev/ttyACM0'
+    board = pyfirmata.Arduino(port)
+    it = pyfirmata.util.Iterator(board)
+    it.start()
+    time.sleep(0.1)
+    analog_input = board.get_pin('a:{}:i'.format(pin))
     
     def __init__(self, BOARD, Voltage_Resolution, ADC_Bit_Resolution, pin, Type):
         """
@@ -75,7 +82,7 @@ class MQUnifiedSensor(object):
         self.__Type = Type # E.G : "CUSTOM MQ"
         
         #Arduino Setup
-        self.analog_input = MQUnifiedSensor.setArduino(self.__pin)
+        #self.analog_input = MQUnifiedSensor.setArduino(self.__pin)
         
     def setA(self, A):
         """
@@ -333,6 +340,7 @@ class MQUnifiedSensor(object):
 
         """
         self.__sensor_volt = self.getVoltage()
+        #print("sensor_volt : {}".format(self.__sensor_volt))
     
     def getVoltage(self, read = True):# -> float:
         """
@@ -348,26 +356,35 @@ class MQUnifiedSensor(object):
         float
             DESCRIPTION. -> return sensor voltage / A0 in volts 
 
-        """  
+        """
+        #self.__adc = analog_input.read()
+        #return self.__adc
+        #analog_input = self.setArduino(self.__pin)
         sensor_voltage = 0
-        retries = 2
-        retry_interval = 20
-        
-    
+        retries = 20
+        retry_interval = 0.5
+        count = 0
         if(read):
             avg_voltage = 0
             for i in range(retries):
                 self.__adc = self.analog_input.read()
-                avg_voltage += self.__adc
-                time.sleep(retry_interval)
-            sensor_voltage = (avg_voltage/ retries) * self.__VOLT_RESOLUTION / ((pow(2, self.__ADC_Bit_Resolution)) - 1)
+                if(self.__adc != None):
+                    avg_voltage = avg_voltage + self.__adc
+                    time.sleep(retry_interval)
+                    count += 1
+                else:
+                    pass
+            sensor_voltage = ((avg_voltage / count) * self.__VOLT_RESOLUTION) / ((math.pow(2, self.__ADC_Bit_Resolution)) - 1)
+        
         else:
-            sensor_voltage - self.__sensor_volt
+            sensor_voltage = self.__sensor_volt
         
         return sensor_voltage
+         
+
     
-    @classmethod
-    def setArduino(cls, pin):# -> object:
+    #@classmethod
+    def setArduino(self, pin):# -> object:
         """
         Set up arduino with python.
 
@@ -425,6 +442,7 @@ class MQUnifiedSensor(object):
 
         """
         # Define variable for sensor resistance
+        #if (self.__sensor_volt != 0):
         RS_air = ((self.__VOLT_RESOLUTION * self.__RL ) / self.__sensor_volt ) - self.__RL
         if(RS_air < 0):# No negative values accepted
             RS_air = 0 
@@ -432,6 +450,9 @@ class MQUnifiedSensor(object):
         if(R0 < 0):# No negative values accepted  
             R0 = 0
         return R0
+        #else:
+        #    R0 = 0
+        #    return R0
     
     
     
@@ -446,19 +467,29 @@ class MQUnifiedSensor(object):
             DESCRIPTION.
 
         """
+# =============================================================================
+#         if (self.__sensor_volt == 0):
+#             pass
+#         else:
+# =============================================================================
+            
         self.__RS_Calc = ((self.__VOLT_RESOLUTION * self.__RL ) / self.__sensor_volt ) - self.__RL
         if(self.__RS_Calc < 0):  
             self.__RS_Calc = 0
+        #if (self.__R0 != 0):
         self.__ratio = self.__RS_Calc / self.__R0
         if(self.__ratio <= 0): 
             self.__ratio = 0
             
         if(self.__regressionMethod == 1): 
-            self.__PPM = self.__a * pow( self.__ratio , self.__b )
+            #if(self.__ratio != 0):
+            self.__PPM = self.__a * math.pow( self.__ratio , self.__b )
+            #else:
+            #    self.__PPM = 0
         
         else:
             ppm_log = (math.log10( self.__ratio ) - self.__b ) / self.__a
-            self.__PPM = pow(10, ppm_log)
+            self.__PPM = math.pow(10, ppm_log)
             
         if( self.__PPM < 0):  
             self.__PPM = 0
