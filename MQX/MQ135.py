@@ -5,15 +5,15 @@ Created on Tue Sep 29 17:41:16 2020.
 
 @author: shahan
 """
-
+from __future__ import division
 from MQUnifiedSensor import MQUnifiedSensor
-import math 
+import math , time
 
 
-class MQ4():
+class MQ135():
     """
     
-    A class used to represent MQ-4 sensor.
+    A class used to represent MQ-135 sensor.
 
     Attributes
     ----------
@@ -35,21 +35,100 @@ class MQ4():
     User Functions : calibrate, Main, PPM
     Exponential regression:
   
-    Gas    | a      | b
-    LPG    | 3811.9 | -3.113
-    CH4    | 1012.7 | -2.786
-    CO     | 200000000000000 | -19.05
-    Alcohol| 60000000000 | -14.01
-    smoke  | 30000000 | -8.308
+    Exponential regression:
+    GAS      | a      | b
+    CO       | 605.18 | -3.937  
+    Alcohol  | 77.255 | -3.18 
+    CO2      | 110.47 | -2.862
+    Tolueno  | 44.947 | -3.445
+    NH4      | 102.2  | -2.473
+    Acetona  | 34.668 | -3.369
   
     """
     
-    def __init__(self):
-        self.MQ4 = MQUnifiedSensor("Arduino", 5, 1, 3, "MQ4")
-        self.RatioMQ4CleanAir = 4.4
-        self.MQ4.setRegressionMethod(1)
-        self.MQ4.setA(1012.7)
-        self.MQ4.setB(-2.786)
+    ######################### Hardware Related Macros #########################
+    MQ135 = MQUnifiedSensor("Arduino", 5, 1, 2, "MQ135")
+    MQ135.setRegressionMethod(1)
+    RatioMQ135CleanAir = 3.6
+    ######################### Software Related Macros #########################
+    CALIBARAION_SAMPLE_TIMES     = 10       # define how many samples you are going to take in the calibration phase
+    CALIBRATION_SAMPLE_INTERVAL  = 100      # define the time interval(in milisecond) between each samples in the
+                                            # cablibration phase
+    
+    ######################### Application Related Macros ######################
+    __NH4                      = "NH4"
+    __CO2                      = "CO2"
+    __C0                       = "C0"
+    __ALCOHOL                  = "ALCOHOL"
+    __ACETONA                  = "ACETONA"
+    __TOLUENO                  = "TOLUENO"
+                                            
+    def __init__(self, gasType):
+        # Curve is a list where index 0 is slope and 1 is intercept i.e A/M and B
+        # curve = [A , B]
+        self.NH4curve     = [102.2  , -2.473]
+        self.CO2curve     = [110.47 , -2.862]
+        self.COcurve      = [605.18 , -3.937]
+        self.ALCOHOLcurve = [77.255 , -3.18]
+        self.ACETONAcurve = [34.668 , -3.369]
+        self.TOLUENOcurve = [44.947 , -3.445]
+        self.__gas = gasType
+        
+        #self.GasTypeCheckAndSetA_B(gasType)
+        self.calibrate()
+        
+    def GasTypeCheckAndSetA_B(self,gasType):
+        """
+        Check Gas type and set corresponding A and B.
+
+        Parameters
+        ----------
+        gasType : TYPE -> Str
+            DESCRIPTION. -> Name of Gas to be Measure
+
+        Raises
+        ------
+        TypeError -> Str
+            DESCRIPTION. -> Incorrect Gas
+
+        Returns
+        -------
+        None.
+
+        """
+        if(self.__NH4 == gasType):
+            self.set_A_B(self.NH4curve[0], self.NH4curve[1])
+        elif(self.__CO2 == gasType):
+            self.set_A_B(self.CO2curve[0], self.CO2curve[1])
+        elif(self.__C0 == gasType):
+            self.set_A_B(self.COcurve[0], self.COcurve[1])
+        elif(self.__ALCOHOL == gasType):
+            self.set_A_B(self.ALCOHOLcurve[0], self.ALCOHOLcurve[1])
+        elif(self.__ACETONA == gasType):
+            self.set_A_B(self.ACETONAcurve[0], self.ACETONAcurve[1])
+        elif(self.__TOLUENO == gasType):
+            self.set_A_B(self.TOLUENOcurve[0], self.TOLUENOcurve[1])
+        else:
+            raise TypeError("Only Valid gas types are allowed")
+    
+    def set_A_B(self,A,B):
+        """
+        Set A/M and B for different gas concentration.
+
+        Parameters
+        ----------
+        A : TYPE -> float
+            DESCRIPTION. -> Slope
+        B : TYPE -> float
+            DESCRIPTION. -> Intercept of y axis
+
+        Returns
+        -------
+        None.
+
+        """
+        self.MQ135.setA(A)
+        self.MQ135.setB(B)
         
     def calibrate(self):
         """
@@ -62,20 +141,21 @@ class MQ4():
         None.
 
         """
-        print("Calibrating please wait.")
+        print("Calibrating please wait. Gas : {}".format(self.__gas))
         calcR0 = 0
-        for i in range(0,10):
-            self.MQ4.update()
-            calcR0 += self.MQ4.calibrate(self.RatioMQ4CleanAir)
+        for _ in range(self.CALIBARAION_SAMPLE_TIMES):
+            self.MQ135.update()
+            calcR0 += self.MQ135.calibrate(self.RatioMQ135CleanAir)
+            time.sleep(self.CALIBRATION_SAMPLE_INTERVAL/1000)
         
-        self.MQ4.setR0(calcR0/10)
+        self.MQ135.setR0(calcR0/10)
         print("Done!!")
         if(math.isinf(calcR0)):
             print("Warning: Conection issue founded, R0 is infite (Open circuit detected) please check your wiring and supply")
         if(calcR0 == 0):
             print("Warning: Conection issue founded, R0 is zero (Analog pin with short circuit to ground) please check your wiring and supply")
         
-        self.MQ4.serialDebug(True)
+        #self.MQ135.serialDebug(True)
 
     def main(self):
         """
@@ -86,17 +166,18 @@ class MQ4():
         None.
 
         """
-        self.calibrate()
+        #self.calibrate()
+        #self.set_A_B(605.18, -3.937)# NH4
         while True: 
-            self.MQ4.update()
+            self.MQ135.update()
             #print("analog value : {}".format(Analog_value))
-            self.MQ4.readSensor()
-            self.MQ4.serialDebug()
+            self.MQ135.readSensor()
+            self.MQ135.serialDebug()
             #time.sleep(0.1)
-        
+            
     def PPM(self):
         """
-        Calculate and return PPM  foro MQ4 Sensor.
+        Calculate and return Gas PPM  for MQ135 Sensor.
 
         Returns
         -------
@@ -104,14 +185,48 @@ class MQ4():
             DESCRIPTION. -> Gas Concentration.
 
         """
-        self.calibrate()
-        self.MQ4.update()
-        PPM = self.MQ4.readSensor()
+        #A, B = 110.47, -2.862
+        #self.set_A_B(A, B)
+        #self.calibrate()
+        self.MQ135.update()
+        self.GasTypeCheckAndSetA_B(self.__gas)
+        PPM = self.MQ135.readSensor()
         return PPM
-        
         
             
 if __name__ == "__main__":
-    MQ4S = MQ4()
-    #MQ4.calibrate()
-    MQ4S.main()
+    MQ135NH4 = MQ135("NH4")
+    MQ135CO2 = MQ135("CO2")
+    #MQ135S.calibrate()
+    #MQ135CO2.calibrate()
+    while True:
+        #MQ135NH4.GasTypeCheckAndSetA_B("NH4")
+        PPMNH4 = MQ135NH4.PPM()
+        #MQ135CO2.GasTypeCheckAndSetA_B("CO2")
+        PPMCO2 = MQ135CO2.PPM()
+        print("NH4 : {} and CO2 : {}".format(PPMNH4, PPMCO2))
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        

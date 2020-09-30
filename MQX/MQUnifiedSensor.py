@@ -44,8 +44,12 @@ class MQUnifiedSensor(object):
     #__ADC_Bit_Resolution = 10 -> Assign your own 
     __regressionMethod = 1 # 1 -> Exponential || 2 -> Linear
     
-    __adc, __a, __b, __sensor_volt = 0, 0, 0, 0#None , None , None , None
-    __R0, __RS_air, __ratio, __PPM, __RS_Calc = 0, 0, 0, 0, 0#None , None , None , None , None
+    __adc, __a, __b, __sensor_volt = 0, 0, 0, 0
+    __R0, __RS_air, __ratio, __PPM, __RS_Calc = 0, 0, 0, 0, 0
+    
+    READ_SAMPLE_INTERVAL         = 200      # define the time interval(in milisecond) between each samples in
+    READ_SAMPLE_TIMES            = 5        # define how many samples you are going to take in normal operation 
+                                            # normal operation
 # =============================================================================
 #     __Type : str
 #     __BOARD : str
@@ -361,22 +365,17 @@ class MQUnifiedSensor(object):
             DESCRIPTION. -> return sensor voltage / A0 in volts 
 
         """
-        #self.__adc = analog_input.read()
-        #return self.__adc
-        #analog_input = self.setArduino(self.__pin)
         sensor_voltage = 0
-        retries = 5
-        retry_interval = 0.2
-        #count = 0
+        
         if(read):
             avg_voltage = 0
             count = 0
-            for _ in range(retries):
+            for _ in range(self.READ_SAMPLE_TIMES):
                 self.__adc = self.analog_input.read()
                 time.sleep(0.2)
-                if(self.__adc != None):
+                if(self.__adc != None): # Pyfirmata None input check
                     avg_voltage = avg_voltage + self.__adc
-                    time.sleep(retry_interval)
+                    time.sleep(self.READ_SAMPLE_INTERVAL/1000)
                     count += 1
                 else:
                     pass
@@ -449,19 +448,13 @@ class MQUnifiedSensor(object):
 
         """
         # Define variable for sensor resistance
-        #if (self.__sensor_volt != 0):
         RS_air = ((self.__VOLT_RESOLUTION * self.__RL ) / self.__sensor_volt ) - self.__RL
         if(RS_air < 0):# No negative values accepted
             RS_air = 0 
         R0 = RS_air/ratioInCleanAir # Calculate R0 
         if(R0 < 0):# No negative values accepted  
             R0 = 0
-        return R0
-        #else:
-        #    R0 = 0
-        #    return R0
-    
-    
+        return R0 
     
     def readSensor(self):# -> float:
         """
@@ -474,26 +467,19 @@ class MQUnifiedSensor(object):
             DESCRIPTION.
 
         """
-# =============================================================================
-#         if (self.__sensor_volt == 0):
-#             pass
-#         else:
-# =============================================================================
-            
         self.__RS_Calc = ((self.__VOLT_RESOLUTION * self.__RL ) / self.__sensor_volt ) - self.__RL
+        
         if(self.__RS_Calc < 0):  
             self.__RS_Calc = 0
-        #if (self.__R0 != 0):
+
         self.__ratio = self.__RS_Calc / self.__R0
+        
         if(self.__ratio <= 0): 
             self.__ratio = 0
             
         if(self.__regressionMethod == 1): 
-            #if(self.__ratio != 0):
             self.__PPM = self.__a * math.pow( self.__ratio , self.__b )
-            #else:
-            #    self.__PPM = 0
-        
+   
         else:
             ppm_log = (math.log10( self.__ratio ) - self.__b ) / self.__a
             self.__PPM = math.pow(10, ppm_log)

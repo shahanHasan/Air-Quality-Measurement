@@ -10,10 +10,10 @@ from MQUnifiedSensor import MQUnifiedSensor
 import math , time 
 
 
-class MQ4():
+class MQ7():
     """
     
-    A class used to represent MQ-4 sensor.
+    A class used to represent MQ-7 sensor.
 
     Attributes
     ----------
@@ -33,21 +33,21 @@ class MQ4():
     Setters : From MQUnified
     Getters : From MQUnified , PPM
     User Functions : calibrate, Main, PPM
+ 
     Exponential regression:
-  
-    Gas    | a      | b
-    LPG    | 3811.9 | -3.113
-    CH4    | 1012.7 | -2.786
-    CO     | 200000000000000 | -19.05
-    Alcohol| 60000000000 | -14.01
-    smoke  | 30000000 | -8.308
+    GAS     | a      | b
+    H2      | 69.014  | -1.374
+    LPG     | 700000000 | -7.703
+    CH4     | 60000000000000 | -10.54
+    CO      | 99.042 | -1.518
+    Alcohol | 40000000000000000 | -12.35
   
     """
     
     ######################### Hardware Related Macros #########################
-    MQ4 = MQUnifiedSensor("Arduino", 5, 1, 3, "MQ4")
-    RatioMQ4CleanAir = 4.4
-    MQ4.setRegressionMethod(1)
+    MQ7 = MQUnifiedSensor("Arduino", 5, 1, 1, "MQ7")
+    RatioMQ7CleanAir = 27.5
+    MQ7.setRegressionMethod(1)
     
     
     ######################### Software Related Macros #########################
@@ -56,20 +56,20 @@ class MQ4():
                                             # cablibration phase
                                             
     ######################### Application Related Macros ######################
-    __CH4                      = "CH4"
+    __H2                       = "H2"
     __CO                       = "CO"
     __LPG                      = "LPG"
+    __CH4                      = "CH4"
     __ALCOHOL                  = "ALCOHOL"
-    __SMOKE                    = "SMOKE"
     
     def __init__(self, gasType):
         # Curve is a list where index 0 is slope and 1 is intercept i.e A/M and B
         # curve = [A , B]
-        self.CH4curve = [1012.7 , -2.786]
-        self.COcurve = [200000000000000 , -19.05]
-        self.LPGcurve = [3811.9 , -3.113]
-        self.ALCOHOLcurve = [60000000000 , -14.01]
-        self.SMOKEcurve = [30000000 , -8.308]
+        self.CH4curve = [60000000000000 , -10.54]
+        self.COcurve = [99.042 , -1.518]
+        self.LPGcurve = [700000000 , -7.703]
+        self.ALCOHOLcurve = [40000000000000000 , -12.35]
+        self.H2curve = [69.014  , -1.374]
         
         self.GasTypeCheckAndSetA_B(gasType)
         self.calibrate()
@@ -101,8 +101,8 @@ class MQ4():
             self.set_A_B(self.LPGcurve[0], self.LPGcurve[1])
         elif(self.__ALCOHOL == gasType):
             self.set_A_B(self.ALCOHOLcurve[0], self.ALCOHOLcurve[1])
-        elif(self.__SMOKE == gasType):
-            self.set_A_B(self.SMOKEcurve[0], self.SMOKEcurve[1])
+        elif(self.__H2 == gasType):
+            self.set_A_B(self.H2curve[0], self.H2curve[1])
         else:
             raise TypeError("Only Valid gas types are allowed")
         
@@ -122,8 +122,8 @@ class MQ4():
         None.
 
         """
-        self.MQ4.setA(A)
-        self.MQ4.setB(B)
+        self.MQ7.setA(A)
+        self.MQ7.setB(B)
         
     def calibrate(self):
         """
@@ -139,18 +139,18 @@ class MQ4():
         print("Calibrating please wait.")
         calcR0 = 0
         for _ in range(self.CALIBARAION_SAMPLE_TIMES):
-            self.MQ4.update()
-            calcR0 += self.MQ4.calibrate(self.RatioMQ4CleanAir)
+            self.MQ7.update()
+            calcR0 += self.MQ7.calibrate(self.RatioMQ7CleanAir)
             time.sleep(self.CALIBRATION_SAMPLE_INTERVAL/1000)
         
-        self.MQ4.setR0(calcR0/10)
+        self.MQ7.setR0(calcR0/10)
         print("Done!!")
         if(math.isinf(calcR0)):
             print("Warning: Conection issue founded, R0 is infite (Open circuit detected) please check your wiring and supply")
         if(calcR0 == 0):
             print("Warning: Conection issue founded, R0 is zero (Analog pin with short circuit to ground) please check your wiring and supply")
         
-        self.MQ4.serialDebug(True)
+        self.MQ7.serialDebug(True)
 
     def main(self):
         """
@@ -164,10 +164,10 @@ class MQ4():
         #self.set_A_B(self.CH4curve[0], self.CH4curve[1])# 
         #self.calibrate()
         while True: 
-            self.MQ4.update()
+            self.MQ7.update()
             #print("analog value : {}".format(Analog_value))
-            self.MQ4.readSensor()
-            self.MQ4.serialDebug()
+            self.MQ7.readSensor()
+            self.MQ7.serialDebug()
             #time.sleep(0.1)
         
     def PPM(self):
@@ -182,14 +182,13 @@ class MQ4():
         """
         #self.set_A_B(self.CH4curve[0], self.CH4curve[1])
         #self.calibrate()
-        self.MQ4.update()
-        PPM = self.MQ4.readSensor()
+        self.MQ7.update()
+        PPM = self.MQ7.readSensor()
         return PPM
         
         
             
 if __name__ == "__main__":
-    MQ4S = MQ4("CH4")
+    MQ7S = MQ7("CO")
     #MQ4.calibrate()
-    MQ4S.main()
-    
+    MQ7S.main()
