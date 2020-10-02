@@ -176,6 +176,25 @@ class MQ131():
         self.MQ131.update()
         PPM = self.MQ131.readSensor()
         return PPM
+    
+    def CorrectedPPM(self,PPM):
+        """
+        Adjust Concentration.
+
+        Parameters
+        ----------
+        PPM : TYPE -> Float
+            DESCRIPTION. -> Concentration
+
+        Returns
+        -------
+        PPM : TYPE -> FLoat
+            DESCRIPTION. -> Adjusted Concentration
+
+        """
+        PPM /= 100
+        return PPM
+            
         
         
             

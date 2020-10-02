@@ -192,6 +192,29 @@ class MQ135():
         self.GasTypeCheckAndSetA_B(self.__gas)
         PPM = self.MQ135.readSensor()
         return PPM
+
+    def CorrectedPPM(self,PPM):
+        """
+        Adjust Concentration.
+
+        Parameters
+        ----------
+        PPM : TYPE -> Float
+            DESCRIPTION. -> Concentration
+
+        Returns
+        -------
+        PPM : TYPE -> FLoat
+            DESCRIPTION. -> Adjusted Concentration
+
+        """
+        if(self.__gas == "NH4"):
+            return PPM
+        elif(self.__gas == "CO2"):
+            PPM += 600
+            return PPM
+
+
         
             
 if __name__ == "__main__":

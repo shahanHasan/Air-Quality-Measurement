@@ -25,7 +25,7 @@ class PMS:
             """
             Wake sensor up.
             
-            Assign corresponding bytes before decode.
+            '\x01', data byte 3 set to 0 , to signal sensor to wake up.
 
             Returns
             -------
@@ -58,12 +58,14 @@ class PMS:
         # xAA, 0xB4, 0x06, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0x05, 0xAB
         def sensor_sleep(self):
             """
-            Sensor Sleep.
-
+            Sensor to Sleep, turned off till woken.
+            
+            '\x00', data byte 3 set to 0 , to signal sensor to sleep.
+           
             Returns
             -------
             None.
-
+            
             """
             bytes = ['\xaa', #head
             '\xb4', #command 1
@@ -94,12 +96,12 @@ class PMS:
 
             Parameters
             ----------
-            d : TYPE
+            d : TYPE -> Raw sensor Data. in byte Strings.
                 DESCRIPTION.
 
             Returns
             -------
-            data : TYPE -> Raw sensor Data.
+            data : TYPE -> List of PM2.5 and PM10 
                 DESCRIPTION.
 
             """
@@ -108,11 +110,13 @@ class PMS:
             pm25 = r[0]/10.0
             pm10 = r[1]/10.0
             checksum = sum(ord(v) for v in d[2:8])%256
-            print("PM 2.5: {} μg/m^3  PM 10: {} μg/m^3 CRC={}".format(pm25, pm10, "OK" if (checksum==r[2] and r[3]==0xab) else "NOK"))
+            #print("PM 2.5: {} μg/m^3  PM 10: {} μg/m^3 CRC={}".format(pm25, pm10, "OK" if (checksum==r[2] and r[3]==0xab) else "NOK"))
             #self.result_pm25.set(pm25)
             #self.result_pm10.set(pm10)
-            data = [pm25, pm10]
-            return data
+            if (checksum==r[2] and r[3]==0xab):
+                data = [pm25, pm10]
+                return data
+
             
         def sensor_read(self):
             """

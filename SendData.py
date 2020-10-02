@@ -155,7 +155,7 @@ def sendData():
         NH4 = MQ135NH4.PPM()
         CO2 = MQ135CO2.PPM()
                 
-        if pm is not None:
+        if pm is not None:#Check NoneType
             saveToCsv(pm[0],pm[1],temp , pres , hum, O3, NH4, CO, CH4, CO2) 
             thingspeakconn(pm[0],pm[1],temp , pres , O3, NH4, CO, CH4)
             pms.sensor_sleep()
