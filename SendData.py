@@ -145,21 +145,24 @@ def sendData():
         
         #PM sensor
         pms.sensor_wake()
-        time.sleep(10)
+        time.sleep(5)
         pm = pms.sensor_read()
         
         #MQ sensor
         CH4 = MQ4S.PPM()
-        CO = MQ7S.PPM()
-        O3 = MQ131S.PPM()
-        NH4 = MQ135NH4.PPM()
-        CO2 = MQ135CO2.PPM()
+        CO = MQ7S.CorrectedPPM()
+        O3 = MQ131S.CorrectedPPM()
+        NH4 = MQ135NH4.CorrectedPPM()
+        CO2 = MQ135CO2.CorrectedPPM()
                 
         if pm is not None:#Check NoneType
-            saveToCsv(pm[0],pm[1],temp , pres , hum, O3, NH4, CO, CH4, CO2) 
+            saveToCsv(pm[0],pm[1],temp , pres , hum, O3, NH4, CO, CH4, CO2)
+            time.sleep(5)
             thingspeakconn(pm[0],pm[1],temp , pres , O3, NH4, CO, CH4)
             pms.sensor_sleep()
-            time.sleep(10)
+            print("pm2.5 : {}, Pm10 : {}, temp : {}, pres : {}, hum : {},".format(pm[0],pm[1],temp , pres , hum)
+                 +" O3 : {}, NH4 : {}, CO : {} , CH4 : {}, CO2 : {}".format(O3, NH4, CO, CH4, CO2))
+            time.sleep(5)
     
 if __name__ == "__main__":
     

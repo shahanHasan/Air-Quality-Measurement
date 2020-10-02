@@ -186,7 +186,7 @@ class MQ7():
         PPM = self.MQ7.readSensor()
         return PPM
     
-    def CorrectedPPM(self,PPM):
+    def CorrectedPPM(self):
         """
         Adjust Concentration.
 
@@ -201,7 +201,8 @@ class MQ7():
             DESCRIPTION. -> Adjusted Concentration
 
         """
-        PPM *= 100
+        PPM = self.PPM()
+        PPM += 3
         return PPM
         
         

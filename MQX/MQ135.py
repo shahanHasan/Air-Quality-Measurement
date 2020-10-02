@@ -193,7 +193,7 @@ class MQ135():
         PPM = self.MQ135.readSensor()
         return PPM
 
-    def CorrectedPPM(self,PPM):
+    def CorrectedPPM(self):
         """
         Adjust Concentration.
 
@@ -208,6 +208,7 @@ class MQ135():
             DESCRIPTION. -> Adjusted Concentration
 
         """
+        PPM = self.PPM()
         if(self.__gas == "NH4"):
             return PPM
         elif(self.__gas == "CO2"):
