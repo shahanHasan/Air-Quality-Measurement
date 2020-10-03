@@ -1,23 +1,36 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Sun Sep 20 03:18:48 2020.
-
-@author: shahan
-"""
+"""Created on Sun Sep 20 03:18:48 2020."""
 
 import httplib
 import urllib
 import time, datetime , csv , os , sys
 from PMSensor.pmsensor import PMS
 from BMP280.BMPTest import BMS
-from MQX.MQ4 import MQ4 # CH4
 from MQX.MQ7 import MQ7 # CO
+from MQX.MQ4 import MQ4 # CH4
 from MQX.MQ131 import MQ131 # O3
 from MQX.MQ135 import MQ135 # NH4 and CO2
 
 key = "182ENGDTZ0WMJUPT"  # Put your API Key here
+#Number_of_samples = 20 #-> Use for performance of pi. 
 
+def CSVHead():
+    """
+    Add csv head row.
+
+    Returns
+    -------
+    None.
+
+    """
+    with open('/home/pi/Desktop/Airquality measureAdjusted/data.csv', 'ab') as csvfile:
+            file = csv.writer(csvfile, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+            #if(!headerAdded):
+            file.writerow(['pm2.5','pm10','temperature' , 'pressure' , 'humidity', 'O3', 'NH4', 'CO', 'CH4', 'CO2'])
+            csvfile.close()
+            
+            
 def saveToCsv(sense1,sense2,sense3,sense4,sense5,sense6,sense7,sense8,sense9,sense10):
     """
     Save data to CSV, CSV set up.
@@ -48,7 +61,7 @@ def saveToCsv(sense1,sense2,sense3,sense4,sense5,sense6,sense7,sense8,sense9,sen
     None.
 
     """
-    with open('data.csv', 'ab') as csvfile:
+    with open('/home/pi/Desktop/Airquality measureAdjusted/data.csv', 'ab') as csvfile:
         file = csv.writer(csvfile, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         file.writerow
         ([datetime.datetime.now().replace(microsecond=0).isoformat().replace('T', ' '), 
@@ -101,7 +114,7 @@ def thingspeakconn(sense1,sense2,sense3,sense4,sense5,sense6,sense7,sense8):
     headers = {"Content-typZZe": "application/x-www-form-urlencoded","Accept": "text/plain"}
     conn = httplib.HTTPConnection("api.thingspeak.com:80")
     try:
-        print("----try catch 1 ------")
+        #print("----try catch 1 ------")
         conn.request("POST", "/update", params, headers)
         response = conn.getresponse()
         #print("PM2.5 : " + pm[0])
@@ -137,16 +150,15 @@ def sendData():
     MQ135NH4 = MQ135("NH4")
     MQ135CO2 = MQ135("CO2")
     
-    
+    CSVHead()
+    #for _ in range(Number_of_samples): #Use for Performance.
     while True:
-        print("Begin")
+        #print("Begin")
         #BMP sensor
         temp , pres , hum = bms.readFunc()
         
         #PM sensor
-        pms.sensor_wake()
-        time.sleep(5)
-        pm = pms.sensor_read()
+        pm = pms.reading()
         
         #MQ sensor
         CH4 = MQ4S.PPM()
@@ -154,12 +166,11 @@ def sendData():
         O3 = MQ131S.CorrectedPPM()
         NH4 = MQ135NH4.CorrectedPPM()
         CO2 = MQ135CO2.CorrectedPPM()
-                
+        
         if pm is not None:#Check NoneType
             saveToCsv(pm[0],pm[1],temp , pres , hum, O3, NH4, CO, CH4, CO2)
             time.sleep(5)
             thingspeakconn(pm[0],pm[1],temp , pres , O3, NH4, CO, CH4)
-            pms.sensor_sleep()
             print("pm2.5 : {}, Pm10 : {}, temp : {}, pres : {}, hum : {},".format(pm[0],pm[1],temp , pres , hum)
                  +" O3 : {}, NH4 : {}, CO : {} , CH4 : {}, CO2 : {}".format(O3, NH4, CO, CH4, CO2))
             time.sleep(5)
@@ -167,7 +178,9 @@ def sendData():
 if __name__ == "__main__":
     
     try:
+        #start = time.time() #pi performance
         sendData()
+        #end = time.time()
     except KeyboardInterrupt:
         print('Interrupted')
         try:

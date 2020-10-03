@@ -1,10 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Sun Sep 20 01:14:31 2020.
-
-@author: shahan
-"""
+"""Created on Sun Sep 20 01:14:31 2020."""
 from __future__ import print_function
 import serial, struct, time, csv, datetime
 #from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -20,6 +16,8 @@ ser.flushInput()
 class PMS:
         """Sends data in byte String , so decode it."""
         
+        # Sampling interval
+        sleep_interval , wake_interval = 5 , 5 
         # 0xAA, 0xB4, 0x06, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0x06, 0xAB
         def sensor_wake(self):
             """
@@ -36,7 +34,7 @@ class PMS:
             '\xb4', #command 1
             '\x06', #data byte 1
             '\x01', #data byte 2 (set mode)
-            '\x01', #data byte 3 (sleep)
+            '\x01', #data byte 3 (work)
             '\x00', #data byte 4
             '\x00', #data byte 5
             '\x00', #data byte 6
@@ -135,6 +133,23 @@ class PMS:
                 if d[0] == "\xc0":
                     data = self.process_frame(byte + d)
                     return data
+                
+        def reading(self):
+            """
+            Return PM values.
+
+            Returns
+            -------
+            pm : TYPE -> float
+                DESCRIPTION. -> reading of pm2.5 and pm10
+
+            """
+            self.sensor_wake()
+            time.sleep(self.wake_interval)
+            pm = self.sensor_read()
+            self.sensor_sleep()
+            time.sleep(self.sleep_interval)
+            return pm
 
         def sensor_live(self):
             """
@@ -151,7 +166,7 @@ class PMS:
             i = 0
             while True: # change time interval here, if required
                 self.sensor_wake()
-                time.sleep(5)
+                time.sleep(self.wake_interval)
                 pm = self.sensor_read()
                 if pm is not None:
                     x.append(i)
@@ -164,7 +179,7 @@ class PMS:
                 #print("PM 2.5: {} μg/m^3  PM 10: {} μg/m^3").format(pm[0], pm[1])
                 self.sensor_sleep()
                 i += 1
-                time.sleep(5)
+                time.sleep(self.sleep_interval)
 
 if (__name__ == "__main__"):
     obj1 = PMS()

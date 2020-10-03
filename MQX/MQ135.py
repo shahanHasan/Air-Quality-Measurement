@@ -1,10 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Tue Sep 29 17:41:16 2020.
-
-@author: shahan
-"""
+"""Created on Tue Sep 29 17:41:16 2020."""
 from __future__ import division
 from MQUnifiedSensor import MQUnifiedSensor
 import math , time
@@ -219,16 +215,16 @@ class MQ135():
         
             
 if __name__ == "__main__":
-    MQ135NH4 = MQ135("NH4")
+    #MQ135NH4 = MQ135("NH4")
     MQ135CO2 = MQ135("CO2")
     #MQ135S.calibrate()
     #MQ135CO2.calibrate()
     while True:
         #MQ135NH4.GasTypeCheckAndSetA_B("NH4")
-        PPMNH4 = MQ135NH4.PPM()
+        #PPMNH4 = MQ135NH4.PPM()
         #MQ135CO2.GasTypeCheckAndSetA_B("CO2")
         PPMCO2 = MQ135CO2.PPM()
-        print("NH4 : {} and CO2 : {}".format(PPMNH4, PPMCO2))
+        print("CO2 : {}".format(PPMCO2))
         
         
         

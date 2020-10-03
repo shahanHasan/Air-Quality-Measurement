@@ -1,10 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Tue Sep 29 17:41:16 2020.
-
-@author: shahan
-"""
+"""Created on Tue Sep 29 17:41:16 2020."""
 from __future__ import division
 from MQUnifiedSensor import MQUnifiedSensor
 import math , time 
