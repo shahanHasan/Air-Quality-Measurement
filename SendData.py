@@ -24,7 +24,7 @@ def CSVHead():
     None.
 
     """
-    with open('/home/pi/Desktop/Airquality measureAdjusted/data.csv', 'ab') as csvfile:
+    with open("/home/pi/Desktop/Airquality measureAdjusted/data.csv", 'ab') as csvfile:
             file = csv.writer(csvfile, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
             #if(!headerAdded):
             file.writerow(['pm2.5','pm10','temperature' , 'pressure' , 'humidity', 'O3', 'NH4', 'CO', 'CH4', 'CO2'])
@@ -61,7 +61,7 @@ def saveToCsv(sense1,sense2,sense3,sense4,sense5,sense6,sense7,sense8,sense9,sen
     None.
 
     """
-    with open('/home/pi/Desktop/Airquality measureAdjusted/data.csv', 'ab') as csvfile:
+    with open("/home/pi/Desktop/Airquality measureAdjusted/data.csv", 'ab') as csvfile:
         file = csv.writer(csvfile, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         file.writerow
         ([datetime.datetime.now().replace(microsecond=0).isoformat().replace('T', ' '), 
@@ -110,7 +110,7 @@ def thingspeakconn(sense1,sense2,sense3,sense4,sense5,sense6,sense7,sense8):
           'field8': sense8, 
           'key':key })
     #param2 = urllib.urlencode({'field2': pm[1], 'key':key })
-    print("parameters taken")
+    #print("parameters taken")
     headers = {"Content-typZZe": "application/x-www-form-urlencoded","Accept": "text/plain"}
     conn = httplib.HTTPConnection("api.thingspeak.com:80")
     try:

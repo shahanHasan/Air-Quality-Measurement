@@ -128,9 +128,9 @@ def sendData():
 if __name__ == "__main__":
     
     try:
-        start = time.time()
+        #start = time.time()
         sendData()
-        end = time.time()
+        #end = time.time()
         
     except KeyboardInterrupt:
         print('Interrupted')
