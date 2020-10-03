@@ -1,11 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Mon Sep 28 21:59:19 2020.
-
-@author: shahan
-
-"""
+"""Created on Mon Sep 28 21:59:19 2020."""
 from __future__ import division
 import math , time 
 import pyfirmata
@@ -369,18 +364,18 @@ class MQUnifiedSensor(object):
         
         if(read):
             avg_voltage = 0
-            count = 0
+            #count = 0
             for _ in range(self.READ_SAMPLE_TIMES):
-                self.__adc = self.analog_input.read()
-                time.sleep(0.2)
-                if(self.__adc != None): # Pyfirmata None input check
-                    avg_voltage = avg_voltage + self.__adc
-                    time.sleep(self.READ_SAMPLE_INTERVAL/1000)
-                    count += 1
-                else:
-                    pass
+                self.__adc = self.getanalogvoltage()
+                #time.sleep(0.2)
+                #if(self.__adc != None): # Pyfirmata None input check
+                avg_voltage = avg_voltage + self.__adc
+                time.sleep(self.READ_SAMPLE_INTERVAL/1000)
+                #count += 1
+                #else:
+                #    pass
                 
-            sensor_voltage = ((avg_voltage / count) * self.__VOLT_RESOLUTION) / ((math.pow(2, self.__ADC_Bit_Resolution)) - 1)
+            sensor_voltage = ((avg_voltage / self.READ_SAMPLE_TIMES) * self.__VOLT_RESOLUTION) / ((math.pow(2, self.__ADC_Bit_Resolution)) - 1)
         
         else:
             sensor_voltage = self.__sensor_volt
@@ -388,7 +383,22 @@ class MQUnifiedSensor(object):
         return sensor_voltage
          
 
-    
+    def getanalogvoltage(self):
+        """
+        Read voltage data raw.
+
+        Returns
+        -------
+        TYPE -> analog voltage.
+            DESCRIPTION.
+
+        """
+        adc_volt = self.analog_input.read()
+        if adc_volt is not None:
+            return adc_volt
+        else:
+            return self.getanalogvoltage()
+        
     #@classmethod
     def setArduino(self, pin):# -> object:
         """

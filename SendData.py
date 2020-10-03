@@ -12,10 +12,10 @@ from MQX.MQ135 import MQ135 # NH4 and CO2
 import CSVTest
 import ThinkSpeakTest
 
-class DataTransmission():
+class DataTransmission(object):
     """Send data to Think speak and save to CSV file actual."""
     
-    def sendData():
+    def sendData(self):
         """
         Send data to Think Speak and save to CSV.
     

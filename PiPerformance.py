@@ -92,7 +92,7 @@ class performance():
 if __name__ == "__main__":
     
     try:
-        CSVTest.CSVHead()
+        #CSVTest.CSVHead()
         start = time.time()
         perf = performance()
         end = time.time()
