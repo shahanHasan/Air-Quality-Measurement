@@ -4,7 +4,7 @@
 
 import CSVTest
 import ThinkSpeakTest
-import time , sys , os
+import time , sys , os , csv
 from PMSensor.pmsensor import PMS
 from BMP280.BMPTest import BMS
 from MQX.MQ7 import MQ7 # CO
@@ -39,17 +39,19 @@ class performance():
         O3 = self.MQ131S.CorrectedPPM()
         NH4 = self.MQ135NH4.CorrectedPPM()
         CO2 = self.MQ135CO2.CorrectedPPM()
-        return temp , pres , hum , pm , CH4 , CO , O3 , NH4 , CO2 
+        #if pm is not None:
+        return temp , pres , hum , pm , CH4 , CO , O3 , NH4 , CO2
+        #else:
+        #    self.data()
     
     def performanceCSV(self):
     #Sensor init 
         
         startcsv = time.time()
+        #CSVTest.CSVHead()
         for _ in range(self.__numberofsamples):
-            temp , pres , hum , pm , CH4 , CO , O3 , NH4 , CO2 = self.data()
-            CSVTest.CSVHead()
-            CSVTest.saveToCsv(self.pm[0],self.pm[1],self.temp, self.pres, self.hum, 
-                              self.O3, self.NH4, self.CO, self.CH4, self.CO2)
+            temp , pres , hum , pm , CH4 , CO , O3 , NH4 , CO2 = self.data()   
+            CSVTest.saveToCsv(pm[0],pm[1],temp,pres,hum,O3,NH4,CO,CH4,CO2)
         endcsv = time.time()
         return startcsv, endcsv
     
@@ -58,24 +60,23 @@ class performance():
         for _ in range(self.__numberofsamples):
             temp , pres , hum , pm , CH4 , CO , O3 , NH4 , CO2 = self.data()
             ThinkSpeakTest.thingspeakconn(pm[0],pm[1],temp , pres , O3, NH4, CO, CH4)
-            endTs = time.time()
+        endTs = time.time()
         return startTs, endTs
     
     
     def performanceWhole(self):
         
         startWp = time.time()
+        #CSVTest.CSVHead()
         for _ in range(self.__numberofsamples):
             temp , pres , hum , pm , CH4 , CO , O3 , NH4 , CO2 = self.data()
-            CSVTest.CSVHead()
-            CSVTest.saveToCsv(self.pm[0],self.pm[1],self.temp, self.pres, self.hum, 
-                          self.O3, self.NH4, self.CO, self.CH4, self.CO2)
+            CSVTest.saveToCsv(pm[0],pm[1],temp,pres,hum,O3,NH4,CO,CH4,CO2)
             ThinkSpeakTest.thingspeakconn(pm[0],pm[1],temp , pres , O3, NH4, CO, CH4)
         endWp = time.time()
         return startWp, endWp
         
     
-    def main(self, timeInSec):
+    def main(self, timeInSec=0):
         
         startcsv, endcsv = self.performanceCSV()
         timecsv = endcsv - startcsv + timeInSec
@@ -83,21 +84,32 @@ class performance():
         timeTs = endTs - startTs + timeInSec
         startWp, endWp = self.performanceWhole()
         timeWp = endWp - startWp + timeInSec
-        
-        print("Execution time for CSV : {} , Execution time for Think Speak : {} , Execution time for Pi(Both CSV and Think Speak)  : {}".format(timecsv,timeTs,timeWp))
+        return timecsv, timeTs, timeWp
+        #print("Execution time for CSV : {} , Execution time for Think Speak : {} , Execution time for Pi(Both CSV and Think Speak)  : {}".format(timecsv,timeTs,timeWp))
             
         
         
 if __name__ == "__main__":
     
     try:
+        CSVTest.CSVHead()
         start = time.time()
         perf = performance()
         end = time.time()
-        time = end - start
-        perf.main(time)
+        Execution_time = end - start
+        timecsv, timeTs, timeWp = perf.main(Execution_time)
+        with open("/home/pi/Desktop/Airquality measureAdjusted/CSV/Performance.csv", 'ab') as csvfile:
+            file = csv.writer(csvfile, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+            #if(!headerAdded):
+            file.writerow(['Only CSV','Only Think Speak','Both CSV and Think Speak'])
+            file.writerow([timecsv, timeTs, timeWp])
+            for _ in range(20):
+                timecsv, timeTs, timeWp = perf.main()
+                file.writerow([timecsv, timeTs, timeWp])
+        
     except KeyboardInterrupt:
-        print('Interrupted')
+        csvfile.close()
+        print('Finished')
         try:
             sys.exit(0)
         except SystemExit:

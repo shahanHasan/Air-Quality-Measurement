@@ -66,7 +66,7 @@ def thingspeakconn(sense1,sense2,sense3,sense4,sense5,sense6,sense7,sense8):
         response = conn.getresponse()
         #print("PM2.5 : " + pm[0])
         #print("PM10 : " + pm[1])
-        print(response.status, response.reason)
+        #print(response.status, response.reason)
         data = response.read()
         conn.close()
     except:
@@ -102,10 +102,8 @@ def sendData():
         temp , pres , hum = bms.readFunc()
         
         #PM sensor
-        pms.sensor_wake()
-        time.sleep(5)
-        pm = pms.sensor_read()
-        
+        pm = pms.reading()
+    
         #MQ sensor
         CH4 = MQ4S.PPM()
         CO = MQ7S.CorrectedPPM()
@@ -113,19 +111,15 @@ def sendData():
         NH4 = MQ135NH4.CorrectedPPM()
         CO2 = MQ135CO2.CorrectedPPM()
         
-        if pm is not None:#Check NoneType
-            
-            time.sleep(2)
-            thingspeakconn(pm[0],pm[1],temp , pres , O3, NH4, CO, CH4)
-            pms.sensor_sleep()
-            print("pm2.5 : {}, Pm10 : {}, temp : {}, pres : {}, hum : {},".format(pm[0],pm[1],temp , pres , hum)
-                 +" O3 : {}, NH4 : {}, CO : {} , CH4 : {}, CO2 : {}".format(O3, NH4, CO, CH4, CO2))
-            time.sleep(0.2)
+        thingspeakconn(pm[0],pm[1],temp , pres , O3, NH4, CO, CH4)
+        print("pm2.5 : {}, Pm10 : {}, temp : {}, pres : {}, hum : {},".format(pm[0],pm[1],temp , pres , hum)
+             +" O3 : {}, NH4 : {}, CO : {} , CH4 : {}, CO2 : {}".format(O3, NH4, CO, CH4, CO2))
+        time.sleep(0.2)
         
         
         
 
-if __name__ == "__main__":
+if (__name__ == "__main__"):
     
     try:
         #start = time.time()

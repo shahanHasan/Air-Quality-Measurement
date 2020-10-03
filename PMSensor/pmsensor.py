@@ -149,7 +149,10 @@ class PMS:
             pm = self.sensor_read()
             self.sensor_sleep()
             time.sleep(self.sleep_interval)
-            return pm
+            if pm is not None:
+                return pm
+            else:
+                return self.reading()
 
         def sensor_live(self):
             """
@@ -183,4 +186,5 @@ class PMS:
 
 if (__name__ == "__main__"):
     obj1 = PMS()
-    obj1.sensor_live()
+    data = obj1.reading()
+    print("pm2.5 : {} pm10 : {}".format(data[0],data[1]))
