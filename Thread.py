@@ -80,7 +80,9 @@ def main():
     # Create new threads
     thread1 = ThreadCSV(1, "Thread-CSV")
     thread2 = ThreadTS(2, "Thread-Think Speak")
-
+    
+    thread1.daemon = True #set this thread as a Daemon Thread
+    thread2.daemon = True
     # Start new Threads
     thread1.start()
     thread2.start()
