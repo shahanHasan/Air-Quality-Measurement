@@ -42,7 +42,7 @@ class performance():
         #if pm is not None:
         return temp , pres , hum , pm , CH4 , CO , O3 , NH4 , CO2
         #else:
-        #    self.data()
+        #   self.data()
     
     def performanceCSV(self):
     #Sensor init 
@@ -86,6 +86,8 @@ class performance():
         timeWp = endWp - startWp + timeInSec
         return timecsv, timeTs, timeWp
         #print("Execution time for CSV : {} , Execution time for Think Speak : {} , Execution time for Pi(Both CSV and Think Speak)  : {}".format(timecsv,timeTs,timeWp))
+        
+    
             
         
         
@@ -98,6 +100,7 @@ if __name__ == "__main__":
         end = time.time()
         Execution_time = end - start
         timecsv, timeTs, timeWp = perf.main(Execution_time)
+        print("Execution time for CSV : {} , Execution time for Think Speak : {} , Execution time for Pi(Both CSV and Think Speak)  : {}".format(timecsv, timeTs, timeWp))
         with open("/home/pi/Desktop/Airquality measureAdjusted/CSV/Performance.csv", 'ab') as csvfile:
             file = csv.writer(csvfile, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
             #if(!headerAdded):
@@ -106,9 +109,9 @@ if __name__ == "__main__":
             for _ in range(20):
                 timecsv, timeTs, timeWp = perf.main()
                 file.writerow([timecsv, timeTs, timeWp])
-        
+                print("Execution time for CSV : {} , Execution time for Think Speak : {} , Execution time for Pi(Both CSV and Think Speak)  : {}".format(timecsv, timeTs, timeWp))
+            csvfile.close()
     except KeyboardInterrupt:
-        csvfile.close()
         print('Finished')
         try:
             sys.exit(0)
